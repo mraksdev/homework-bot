@@ -93,12 +93,41 @@ UNDEAD_EMOJIS = {
 }
 
 
-def format_status_message(homework):
-    """Return undead quote only."""
+FACTION_IMAGES = {
+    'approved': (
+        'https://warcraft.wiki.gg/images/thumb/9/98/'
+        'Scourge_Crest.png/200px-Scourge_Crest.png'
+    ),
+    'reviewing': (
+        'https://warcraft.wiki.gg/images/thumb/b/b2/'
+        'Horde_Crest.png/200px-Horde_Crest.png'
+    ),
+    'rejected': (
+        'https://warcraft.wiki.gg/images/thumb/c/c2/'
+        'Alliance_Crest.png/200px-Alliance_Crest.png'
+    )
+}
+
+
+def send_faction_photo(bot, homework):
+    """Send faction crest photo with quote caption."""
     status = homework.get('status', 'unknown')
     emoji = UNDEAD_EMOJIS.get(status, '❓')
     quote = UNDEAD_QUOTES.get(status, 'Прикажешь, хозяин')
-    return f'{emoji} "{quote}"'
+    image_url = FACTION_IMAGES.get(status)
+    if not image_url:
+        return
+    caption = f'{emoji} "{quote}"'
+    try:
+        bot.send_photo(
+            chat_id=TELEGRAM_CHAT_ID,
+            photo=image_url,
+            caption=caption
+        )
+        logger.debug(f'Bot sent faction photo: {caption}')
+    except Exception:
+        logger.debug('Photo send failed, sending text instead')
+        send_message(bot, caption)
 
 
 def parse_status(homework):
@@ -133,8 +162,7 @@ def main():
                 for homework in homeworks:
                     message = parse_status(homework)
                     send_message(bot, message)
-                    formatted = format_status_message(homework)
-                    send_message(bot, formatted)
+                    send_faction_photo(bot, homework)
             else:
                 logger.debug('No new homework statuses in API response')
             timestamp = response.get('current_date', int(time.time()))
