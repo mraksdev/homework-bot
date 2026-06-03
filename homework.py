@@ -82,7 +82,7 @@ def check_response(response):
 
 UNDEAD_QUOTES = {
     'approved': 'Жизнь за Нер\'зула',
-    'reviewing': 'Я повинуюсь',
+    'reviewing': 'Работа — не волк',
     'rejected': 'Опять работа'
 }
 
