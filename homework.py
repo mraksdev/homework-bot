@@ -95,25 +95,40 @@ def parse_status(homework):
 
 
 def main():
-    """Основная логика работы бота."""
+    """Main bot logic."""
+    if not check_tokens():
+        logger.critical('Missing required environment variable')
+        sys.exit(1)
 
-    ...
-
-    # Создаем объект класса бота
-    bot = ...
+    bot = telebot.TeleBot(token=TELEGRAM_TOKEN)
     timestamp = int(time.time())
-
-    ...
+    last_error_message = None
 
     while True:
         try:
-
-            ...
+            response = get_api_answer(timestamp)
+            homeworks = check_response(response)
+            if homeworks:
+                for homework in homeworks:
+                    message = parse_status(homework)
+                    send_message(bot, message)
+            else:
+                logger.debug('No new homework statuses in API response')
+            timestamp = response.get('current_date', int(time.time()))
+            last_error_message = None
 
         except Exception as error:
-            message = f'Сбой в работе программы: {error}'
-            ...
-        ...
+            message = f'Program failure: {error}'
+            logger.error(message)
+            if message != last_error_message:
+                try:
+                    send_message(bot, message)
+                except Exception:
+                    pass
+                last_error_message = message
+
+        finally:
+            time.sleep(RETRY_PERIOD)
 
 
 if __name__ == '__main__':
