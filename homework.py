@@ -103,7 +103,7 @@ def format_status_message(homework):
 
 def parse_status(homework):
     """Extract homework status and return formatted message."""
-    homework_name = homework.get('homework_name')
+    homework_name = homework.get('homework_name', '').removesuffix('.zip')
     if not homework_name:
         raise KeyError('Missing "homework_name" key in homework data')
     status = homework.get('status')
