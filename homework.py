@@ -81,9 +81,9 @@ def check_response(response):
 
 
 UNDEAD_QUOTES = {
-    'approved': 'Служу Нер\'зулу',
+    'approved': 'Жизнь за Нер\'зула',
     'reviewing': 'Я повинуюсь',
-    'rejected': 'Нам нужно больше золота'
+    'rejected': 'Опять работа'
 }
 
 UNDEAD_EMOJIS = {
