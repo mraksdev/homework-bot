@@ -2,6 +2,7 @@ import logging
 import os
 import sys
 import time
+from pathlib import Path
 
 import requests
 import telebot
@@ -93,37 +94,30 @@ UNDEAD_EMOJIS = {
 }
 
 
+ASSETS_DIR = Path(__file__).parent / 'assets'
 WORKER_AVATARS = {
-    'approved': (
-        'https://classic.battle.net/war3/images/undead/'
-        'units/portraits/acolyte.gif'
-    ),
-    'reviewing': (
-        'https://classic.battle.net/war3/images/orc/'
-        'units/portraits/peon.gif'
-    ),
-    'rejected': (
-        'https://classic.battle.net/war3/images/human/'
-        'units/portraits/peasant.gif'
-    )
+    'approved': str(ASSETS_DIR / 'acolyte.gif'),
+    'reviewing': str(ASSETS_DIR / 'peon.gif'),
+    'rejected': str(ASSETS_DIR / 'peasant.gif')
 }
 
 
 def send_worker_photo(bot, homework):
-    """Send faction crest photo with quote caption."""
+    """Send worker avatar with quote caption."""
     status = homework.get('status', 'unknown')
     emoji = UNDEAD_EMOJIS.get(status, '❓')
     quote = UNDEAD_QUOTES.get(status, 'Прикажешь, хозяин')
-    image_url = WORKER_AVATARS.get(status)
-    if not image_url:
+    image_path = WORKER_AVATARS.get(status)
+    if not image_path:
         return
     caption = f'{emoji} "{quote}"'
     try:
-        bot.send_photo(
-            chat_id=TELEGRAM_CHAT_ID,
-            photo=image_url,
-            caption=caption
-        )
+        with open(image_path, 'rb') as f:
+            bot.send_photo(
+                chat_id=TELEGRAM_CHAT_ID,
+                photo=f,
+                caption=caption
+            )
         logger.debug(f'Bot sent worker photo: {caption}')
     except Exception:
         logger.debug('Photo send failed, sending text instead')
@@ -151,7 +145,7 @@ def main():
         sys.exit(1)
 
     bot = telebot.TeleBot(token=TELEGRAM_TOKEN)
-    timestamp = 0  # TEMP
+    timestamp = int(time.time())
     last_error_message = None
 
     while True:
