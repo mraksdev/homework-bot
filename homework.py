@@ -97,10 +97,9 @@ def format_status_message(homework):
     """Return undead-themed status message."""
     homework_name = homework.get('homework_name', 'Unknown')
     status = homework.get('status', 'unknown')
-    verdict = HOMEWORK_VERDICTS.get(status, 'Unknown status')
     emoji = UNDEAD_EMOJIS.get(status, '❓')
     quote = UNDEAD_QUOTES.get(status, 'Прикажешь, хозяин')
-    return f'{emoji} "{quote}" — {homework_name}\n{verdict}'
+    return f'{emoji} "{quote}" — {homework_name}'
 
 
 def parse_status(homework):
