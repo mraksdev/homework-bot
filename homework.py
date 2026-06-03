@@ -39,11 +39,10 @@ UNDEAD_EMOJIS = {
     'rejected': '🪦'
 }
 
-ASSETS_DIR = Path(__file__).parent / 'assets'
 WORKER_AVATARS = {
-    'approved': str(ASSETS_DIR / 'acolyte.gif'),
-    'reviewing': str(ASSETS_DIR / 'peon.gif'),
-    'rejected': str(ASSETS_DIR / 'peasant.gif')
+    'approved': str(Path(__file__).parent / 'assets' / 'acolyte.gif'),
+    'reviewing': str(Path(__file__).parent / 'assets' / 'peon.gif'),
+    'rejected': str(Path(__file__).parent / 'assets' / 'peasant.gif')
 }
 
 
