@@ -37,26 +37,47 @@ logger = logging.getLogger(__name__)
 
 
 def check_tokens():
-    """Проверяет доступность переменных окружения."""
+    """Check environment variables availability."""
     return all([PRACTICUM_TOKEN, TELEGRAM_TOKEN, TELEGRAM_CHAT_ID])
 
 
 def send_message(bot, message):
-    """Отправляет сообщение в Telegram."""
+    """Send message to Telegram chat."""
     try:
         bot.send_message(chat_id=TELEGRAM_CHAT_ID, text=message)
-        logger.debug(f'Бот отправил сообщение: {message}')
+        logger.debug(f'Bot sent message: {message}')
     except telebot.apihelper.ApiException as error:
-        logger.error(f'Сбой при отправке сообщения в Telegram: {error}')
+        logger.error(f'Failed to send message to Telegram: {error}')
         raise
 
 
 def get_api_answer(timestamp):
-    ...
+    """Make request to API and return response as dict."""
+    try:
+        response = requests.get(
+            ENDPOINT,
+            headers=HEADERS,
+            params={'from_date': timestamp}
+        )
+        if response.status_code != 200:
+            raise NotCorrectResponseError(
+                f'Endpoint {ENDPOINT} unavailable. '
+                f'API response code: {response.status_code}'
+            )
+        return response.json()
+    except requests.RequestException as error:
+        raise NotCorrectResponseError(f'Request to API failed: {error}')
 
 
 def check_response(response):
-    ...
+    """Validate API response structure."""
+    if not isinstance(response, dict):
+        raise TypeError('API response must be a dict')
+    if 'homeworks' not in response:
+        raise KeyError('Missing "homeworks" key in API response')
+    if not isinstance(response['homeworks'], list):
+        raise TypeError('"homeworks" must be a list')
+    return response['homeworks']
 
 
 def parse_status(homework):
