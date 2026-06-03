@@ -27,22 +27,23 @@ HOMEWORK_VERDICTS = {
     'rejected': 'Работа проверена: у ревьюера есть замечания.'
 }
 
-UNDEAD_QUOTES = {
-    'approved': 'Жизнь за Нер\'зула',
-    'reviewing': 'Работа — не волк',
-    'rejected': 'Опять работа'
-}
-
-UNDEAD_EMOJIS = {
-    'approved': '💀',
-    'reviewing': '👁',
-    'rejected': '🪦'
-}
-
-WORKER_AVATARS = {
-    'approved': str(Path(__file__).parent / 'assets' / 'acolyte.gif'),
-    'reviewing': str(Path(__file__).parent / 'assets' / 'peon.gif'),
-    'rejected': str(Path(__file__).parent / 'assets' / 'peasant.gif')
+ASSETS = Path(__file__).parent / 'assets'
+STATUS_MEDIA = {
+    'approved': {
+        'emoji': '💀',
+        'quote': 'Жизнь за Нер\'зула',
+        'avatar': ASSETS / 'acolyte.gif',
+    },
+    'reviewing': {
+        'emoji': '👁',
+        'quote': 'Работа — не волк',
+        'avatar': ASSETS / 'peon.gif',
+    },
+    'rejected': {
+        'emoji': '🪦',
+        'quote': 'Опять работа',
+        'avatar': ASSETS / 'peasant.gif',
+    },
 }
 
 
@@ -100,15 +101,13 @@ def check_response(response):
 
 def send_worker_photo(bot, homework):
     """Send worker avatar with quote caption."""
-    status = homework.get('status', 'unknown')
-    emoji = UNDEAD_EMOJIS.get(status, '❓')
-    quote = UNDEAD_QUOTES.get(status, 'Прикажешь, хозяин')
-    image_path = WORKER_AVATARS.get(status)
-    if not image_path:
+    status = homework.get('status')
+    media = STATUS_MEDIA.get(status)
+    if not media:
         return
-    caption = f'{emoji} "{quote}"'
+    caption = f'{media["emoji"]} "{media["quote"]}"'
     try:
-        with open(image_path, 'rb') as f:
+        with open(media['avatar'], 'rb') as f:
             bot.send_photo(
                 chat_id=TELEGRAM_CHAT_ID,
                 photo=f,
