@@ -37,11 +37,18 @@ logger = logging.getLogger(__name__)
 
 
 def check_tokens():
-    ...
+    """Проверяет доступность переменных окружения."""
+    return all([PRACTICUM_TOKEN, TELEGRAM_TOKEN, TELEGRAM_CHAT_ID])
 
 
 def send_message(bot, message):
-    ...
+    """Отправляет сообщение в Telegram."""
+    try:
+        bot.send_message(chat_id=TELEGRAM_CHAT_ID, text=message)
+        logger.debug(f'Бот отправил сообщение: {message}')
+    except telebot.apihelper.ApiException as error:
+        logger.error(f'Сбой при отправке сообщения в Telegram: {error}')
+        raise
 
 
 def get_api_answer(timestamp):
