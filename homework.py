@@ -81,8 +81,16 @@ def check_response(response):
 
 
 def parse_status(homework):
-    ...
-
+    """Extract homework status and return formatted message."""
+    homework_name = homework.get('homework_name')
+    if not homework_name:
+        raise KeyError('Missing "homework_name" key in homework data')
+    status = homework.get('status')
+    if not status:
+        raise KeyError('Missing "status" key in homework data')
+    if status not in HOMEWORK_VERDICTS:
+        raise KeyError(f'Unexpected homework status: {status}')
+    verdict = HOMEWORK_VERDICTS[status]
     return f'Изменился статус проверки работы "{homework_name}". {verdict}'
 
 
