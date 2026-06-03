@@ -80,6 +80,29 @@ def check_response(response):
     return response['homeworks']
 
 
+UNDEAD_QUOTES = {
+    'approved': 'Служу Нер\'зулу',
+    'reviewing': 'Я повинуюсь',
+    'rejected': 'Нам нужно больше золота'
+}
+
+UNDEAD_EMOJIS = {
+    'approved': '💀',
+    'reviewing': '👁',
+    'rejected': '🪦'
+}
+
+
+def format_status_message(homework):
+    """Return undead-themed status message."""
+    homework_name = homework.get('homework_name', 'Unknown')
+    status = homework.get('status', 'unknown')
+    verdict = HOMEWORK_VERDICTS.get(status, 'Unknown status')
+    emoji = UNDEAD_EMOJIS.get(status, '❓')
+    quote = UNDEAD_QUOTES.get(status, 'Прикажешь, хозяин')
+    return f'{emoji} "{quote}" — {homework_name}\n{verdict}'
+
+
 def parse_status(homework):
     """Extract homework status and return formatted message."""
     homework_name = homework.get('homework_name')
@@ -112,6 +135,8 @@ def main():
                 for homework in homeworks:
                     message = parse_status(homework)
                     send_message(bot, message)
+                    formatted = format_status_message(homework)
+                    send_message(bot, formatted)
             else:
                 logger.debug('No new homework statuses in API response')
             timestamp = response.get('current_date', int(time.time()))
