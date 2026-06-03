@@ -21,11 +21,29 @@ RETRY_PERIOD = 600
 ENDPOINT = 'https://practicum.yandex.ru/api/user_api/homework_statuses/'
 HEADERS = {'Authorization': f'OAuth {PRACTICUM_TOKEN}'}
 
-
 HOMEWORK_VERDICTS = {
     'approved': 'Работа проверена: ревьюеру всё понравилось. Ура!',
     'reviewing': 'Работа взята на проверку ревьюером.',
     'rejected': 'Работа проверена: у ревьюера есть замечания.'
+}
+
+UNDEAD_QUOTES = {
+    'approved': 'Жизнь за Нер\'зула',
+    'reviewing': 'Работа — не волк',
+    'rejected': 'Опять работа'
+}
+
+UNDEAD_EMOJIS = {
+    'approved': '💀',
+    'reviewing': '👁',
+    'rejected': '🪦'
+}
+
+ASSETS_DIR = Path(__file__).parent / 'assets'
+WORKER_AVATARS = {
+    'approved': str(ASSETS_DIR / 'acolyte.gif'),
+    'reviewing': str(ASSETS_DIR / 'peon.gif'),
+    'rejected': str(ASSETS_DIR / 'peasant.gif')
 }
 
 
@@ -79,27 +97,6 @@ def check_response(response):
     if not isinstance(response['homeworks'], list):
         raise TypeError('"homeworks" must be a list')
     return response['homeworks']
-
-
-UNDEAD_QUOTES = {
-    'approved': 'Жизнь за Нер\'зула',
-    'reviewing': 'Работа — не волк',
-    'rejected': 'Опять работа'
-}
-
-UNDEAD_EMOJIS = {
-    'approved': '💀',
-    'reviewing': '👁',
-    'rejected': '🪦'
-}
-
-
-ASSETS_DIR = Path(__file__).parent / 'assets'
-WORKER_AVATARS = {
-    'approved': str(ASSETS_DIR / 'acolyte.gif'),
-    'reviewing': str(ASSETS_DIR / 'peon.gif'),
-    'rejected': str(ASSETS_DIR / 'peasant.gif')
-}
 
 
 def send_worker_photo(bot, homework):
