@@ -93,28 +93,28 @@ UNDEAD_EMOJIS = {
 }
 
 
-FACTION_IMAGES = {
+WORKER_AVATARS = {
     'approved': (
-        'https://warcraft.wiki.gg/images/thumb/9/98/'
-        'Scourge_Crest.png/200px-Scourge_Crest.png'
+        'https://classic.battle.net/war3/images/undead/'
+        'units/portraits/acolyte.gif'
     ),
     'reviewing': (
-        'https://warcraft.wiki.gg/images/thumb/b/b2/'
-        'Horde_Crest.png/200px-Horde_Crest.png'
+        'https://classic.battle.net/war3/images/orc/'
+        'units/portraits/peon.gif'
     ),
     'rejected': (
-        'https://warcraft.wiki.gg/images/thumb/c/c2/'
-        'Alliance_Crest.png/200px-Alliance_Crest.png'
+        'https://classic.battle.net/war3/images/human/'
+        'units/portraits/peasant.gif'
     )
 }
 
 
-def send_faction_photo(bot, homework):
+def send_worker_photo(bot, homework):
     """Send faction crest photo with quote caption."""
     status = homework.get('status', 'unknown')
     emoji = UNDEAD_EMOJIS.get(status, '❓')
     quote = UNDEAD_QUOTES.get(status, 'Прикажешь, хозяин')
-    image_url = FACTION_IMAGES.get(status)
+    image_url = WORKER_AVATARS.get(status)
     if not image_url:
         return
     caption = f'{emoji} "{quote}"'
@@ -124,7 +124,7 @@ def send_faction_photo(bot, homework):
             photo=image_url,
             caption=caption
         )
-        logger.debug(f'Bot sent faction photo: {caption}')
+        logger.debug(f'Bot sent worker photo: {caption}')
     except Exception:
         logger.debug('Photo send failed, sending text instead')
         send_message(bot, caption)
@@ -151,7 +151,7 @@ def main():
         sys.exit(1)
 
     bot = telebot.TeleBot(token=TELEGRAM_TOKEN)
-    timestamp = int(time.time())
+    timestamp = 0  # TEMP
     last_error_message = None
 
     while True:
@@ -162,7 +162,7 @@ def main():
                 for homework in homeworks:
                     message = parse_status(homework)
                     send_message(bot, message)
-                    send_faction_photo(bot, homework)
+                    send_worker_photo(bot, homework)
             else:
                 logger.debug('No new homework statuses in API response')
             timestamp = response.get('current_date', int(time.time()))
