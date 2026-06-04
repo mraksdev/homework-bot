@@ -2,6 +2,7 @@ import logging
 import os
 import sys
 import time
+from http import HTTPStatus
 from pathlib import Path
 
 import requests
@@ -57,17 +58,31 @@ logger = logging.getLogger(__name__)
 
 def check_tokens():
     """Check environment variables availability."""
-    return all([PRACTICUM_TOKEN, TELEGRAM_TOKEN, TELEGRAM_CHAT_ID])
+    tokens = (
+        ('PRACTICUM_TOKEN', PRACTICUM_TOKEN),
+        ('TELEGRAM_TOKEN', TELEGRAM_TOKEN),
+        ('TELEGRAM_CHAT_ID', TELEGRAM_CHAT_ID),
+    )
+    missing = [name for name, value in tokens if not value]
+    if missing:
+        logger.critical(
+            f'Missing environment variable(s): {", ".join(missing)}'
+        )
+        return False
+    return True
 
 
 def send_message(bot, message):
     """Send message to Telegram chat."""
     try:
         bot.send_message(chat_id=TELEGRAM_CHAT_ID, text=message)
-        logger.debug(f'Bot sent message: {message}')
-    except telebot.apihelper.ApiException as error:
-        logger.error(f'Failed to send message to Telegram: {error}')
+    except telebot.apihelper.ApiException:
+        logger.exception(
+            'Failed to send message to Telegram'
+        )
         raise
+    else:
+        logger.debug(f'Bot sent message: {message}')
 
 
 def get_api_answer(timestamp):
@@ -78,25 +93,32 @@ def get_api_answer(timestamp):
             headers=HEADERS,
             params={'from_date': timestamp}
         )
-        if response.status_code != 200:
+        if response.status_code != HTTPStatus.OK:
             raise NotCorrectResponseError(
                 f'Endpoint {ENDPOINT} unavailable. '
                 f'API response code: {response.status_code}'
             )
         return response.json()
     except requests.RequestException as error:
-        raise NotCorrectResponseError(f'Request to API failed: {error}')
+        raise NotCorrectResponseError(
+            f'Request to API failed: {error}'
+        ) from error
 
 
 def check_response(response):
     """Validate API response structure."""
     if not isinstance(response, dict):
-        raise TypeError('API response must be a dict')
-    if 'homeworks' not in response:
+        raise TypeError(
+            f'API response must be a dict, got {type(response).__name__}'
+        )
+    homeworks = response.get('homeworks')
+    if homeworks is None:
         raise KeyError('Missing "homeworks" key in API response')
-    if not isinstance(response['homeworks'], list):
-        raise TypeError('"homeworks" must be a list')
-    return response['homeworks']
+    if not isinstance(homeworks, list):
+        raise TypeError(
+            f'"homeworks" must be a list, got {type(homeworks).__name__}'
+        )
+    return homeworks
 
 
 def send_worker_photo(bot, homework):
@@ -107,10 +129,10 @@ def send_worker_photo(bot, homework):
         return
     caption = f'{media["emoji"]} "{media["quote"]}"'
     try:
-        with open(media['avatar'], 'rb') as f:
+        with open(media['avatar'], 'rb') as photo:
             bot.send_photo(
                 chat_id=TELEGRAM_CHAT_ID,
-                photo=f,
+                photo=photo,
                 caption=caption
             )
         logger.debug(f'Bot sent worker photo: {caption}')
@@ -136,7 +158,6 @@ def parse_status(homework):
 def main():
     """Main bot logic."""
     if not check_tokens():
-        logger.critical('Missing required environment variable')
         sys.exit(1)
 
     bot = telebot.TeleBot(token=TELEGRAM_TOKEN)
@@ -145,8 +166,8 @@ def main():
 
     while True:
         try:
-            response = get_api_answer(timestamp)
-            homeworks = check_response(response)
+            api_response = get_api_answer(timestamp)
+            homeworks = check_response(api_response)
             if homeworks:
                 for homework in homeworks:
                     message = parse_status(homework)
@@ -154,17 +175,17 @@ def main():
                     send_worker_photo(bot, homework)
             else:
                 logger.debug('No new homework statuses in API response')
-            timestamp = response.get('current_date', int(time.time()))
+            timestamp = api_response.get('current_date', timestamp)
             last_error_message = None
 
         except Exception as error:
             message = f'Program failure: {error}'
-            logger.error(message)
+            logger.exception(message)
             if message != last_error_message:
                 try:
                     send_message(bot, message)
                 except Exception:
-                    pass
+                    logger.exception('Failed to send error message')
                 last_error_message = message
 
         finally:
