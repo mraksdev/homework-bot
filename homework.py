@@ -77,7 +77,7 @@ def send_message(bot, message):
     """Send message to Telegram chat."""
     try:
         bot.send_message(chat_id=TELEGRAM_CHAT_ID, text=message)
-    except telebot.apihelper.ApiException:
+    except (telebot.apihelper.ApiException, requests.RequestException):
         logger.exception(
             'Failed to send message to Telegram'
         )
