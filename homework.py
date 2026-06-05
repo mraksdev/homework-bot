@@ -65,8 +65,9 @@ def check_tokens():
     )
     missing = [name for name, value in tokens if not value]
     if missing:
+        missing_vars = ', '.join(missing)
         logger.critical(
-            f'Missing environment variable(s): {", ".join(missing)}'
+            f'Missing environment variable(s): {missing_vars}'
         )
         return False
     return True
