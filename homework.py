@@ -108,15 +108,17 @@ def get_api_answer(timestamp):
 def check_response(response):
     """Validate API response structure."""
     if not isinstance(response, dict):
+        response_type = type(response).__name__
         raise TypeError(
-            f'API response must be a dict, got {type(response).__name__}'
+            f'API response must be a dict, got {response_type}'
         )
     homeworks = response.get('homeworks')
     if homeworks is None:
         raise KeyError('Missing "homeworks" key in API response')
     if not isinstance(homeworks, list):
+        homeworks_type = type(homeworks).__name__
         raise TypeError(
-            f'"homeworks" must be a list, got {type(homeworks).__name__}'
+            f'"homeworks" must be a list, got {homeworks_type}'
         )
     return homeworks
 
