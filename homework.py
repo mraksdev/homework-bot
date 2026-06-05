@@ -78,13 +78,15 @@ def send_message(bot, message):
     """Send message to Telegram chat."""
     try:
         bot.send_message(chat_id=TELEGRAM_CHAT_ID, text=message)
-    except (telebot.apihelper.ApiException, requests.RequestException):
+    except (
+        telebot.apihelper.ApiException,
+        requests.RequestException
+    ) as error:
         logger.exception(
             'Failed to send message to Telegram'
         )
-        raise TelegramSendError('Telegram API request failed')
-    else:
-        logger.debug(f'Bot sent message: {message}')
+        raise TelegramSendError('Telegram API request failed') from error
+    logger.debug(f'Bot sent message: {message}')
 
 
 def get_api_answer(timestamp):
