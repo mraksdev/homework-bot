@@ -9,7 +9,7 @@ import requests
 import telebot
 from dotenv import load_dotenv
 
-from exceptions import NotCorrectResponseError
+from exceptions import NotCorrectResponseError, TelegramSendError
 
 load_dotenv()
 
@@ -81,7 +81,7 @@ def send_message(bot, message):
         logger.exception(
             'Failed to send message to Telegram'
         )
-        raise
+        raise TelegramSendError('Telegram API request failed')
     else:
         logger.debug(f'Bot sent message: {message}')
 
@@ -160,6 +160,17 @@ def parse_status(homework):
     return f'Изменился статус проверки работы "{homework_name}". {verdict}'
 
 
+def notify_error(bot, message, last_error_message):
+    """Send error notification if new. Return updated last_error_message."""
+    if message == last_error_message:
+        return last_error_message
+    try:
+        send_message(bot, message)
+    except TelegramSendError:
+        logger.exception('Failed to send error message to Telegram')
+    return message
+
+
 def main():
     """Main bot logic."""
     if not check_tokens():
@@ -183,15 +194,17 @@ def main():
             timestamp = api_response.get('current_date', timestamp)
             last_error_message = None
 
+        except TelegramSendError:
+            logger.exception(
+                'Telegram is unavailable, skipping notification'
+            )
+
         except Exception as error:
             message = f'Program failure: {error}'
             logger.exception(message)
-            if message != last_error_message:
-                try:
-                    send_message(bot, message)
-                except Exception:
-                    logger.exception('Failed to send error message')
-                last_error_message = message
+            last_error_message = notify_error(
+                bot, message, last_error_message
+            )
 
         finally:
             time.sleep(RETRY_PERIOD)
