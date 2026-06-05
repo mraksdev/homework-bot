@@ -142,7 +142,7 @@ def send_worker_photo(bot, homework):
             )
         logger.debug(f'Bot sent worker photo: {caption}')
     except Exception:
-        logger.debug('Photo send failed, sending text instead')
+        logger.exception('Photo send failed, sending text instead')
         send_message(bot, caption)
 
 
