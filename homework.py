@@ -118,7 +118,11 @@ def check_response(response):
         )
     homeworks = response.get('homeworks')
     if homeworks is None:
-        raise KeyError('Missing "homeworks" key in API response')
+        available_keys = ', '.join(response)
+        raise KeyError(
+            f'Missing "homeworks" key in API response. '
+            f'Available keys: {available_keys}'
+        )
     if not isinstance(homeworks, list):
         homeworks_type = type(homeworks).__name__
         raise TypeError(
@@ -151,10 +155,18 @@ def parse_status(homework):
     """Extract homework status and return formatted message."""
     homework_name = homework.get('homework_name', '').removesuffix('.zip')
     if not homework_name:
-        raise KeyError('Missing "homework_name" key in homework data')
+        available_keys = ', '.join(homework)
+        raise KeyError(
+            'Missing "homework_name" key in homework data. '
+            f'Available keys: {available_keys}'
+        )
     status = homework.get('status')
     if not status:
-        raise KeyError('Missing "status" key in homework data')
+        available_keys = ', '.join(homework)
+        raise KeyError(
+            'Missing "status" key in homework data. '
+            f'Available keys: {available_keys}'
+        )
     if status not in HOMEWORK_VERDICTS:
         raise KeyError(f'Unexpected homework status: {status}')
     verdict = HOMEWORK_VERDICTS[status]
