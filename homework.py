@@ -94,16 +94,16 @@ def get_api_answer(timestamp):
             headers=HEADERS,
             params={'from_date': timestamp}
         )
-        if response.status_code != HTTPStatus.OK:
-            raise NotCorrectResponseError(
-                f'Endpoint {ENDPOINT} unavailable. '
-                f'API response code: {response.status_code}'
-            )
-        return response.json()
     except requests.RequestException as error:
         raise NotCorrectResponseError(
             f'Request to API failed: {error}'
         ) from error
+    if response.status_code != HTTPStatus.OK:
+        raise NotCorrectResponseError(
+            f'Endpoint {ENDPOINT} unavailable. '
+            f'API response code: {response.status_code}'
+        )
+    return response.json()
 
 
 def check_response(response):
