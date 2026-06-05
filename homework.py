@@ -195,6 +195,7 @@ def main():
     bot = telebot.TeleBot(token=TELEGRAM_TOKEN)
     timestamp = int(time.time())
     last_error_message = None
+    processed_homeworks = set()
 
     while True:
         try:
@@ -202,12 +203,20 @@ def main():
             homeworks = check_response(api_payload)
             if homeworks:
                 for homework in homeworks:
+                    homework_id = homework.get('id')
+                    if homework_id in processed_homeworks:
+                        continue
+                    processed_homeworks.add(homework_id)
                     message = parse_status(homework)
                     send_message(bot, message)
                     send_worker_photo(bot, homework)
             else:
                 logger.debug('No new homework statuses in API response')
-            timestamp = api_payload.get('current_date', timestamp)
+            current_date = api_payload.get('current_date')
+            if current_date is not None:
+                timestamp = current_date + 1
+            else:
+                timestamp += 1
             last_error_message = None
 
         except TelegramSendError:
