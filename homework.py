@@ -182,8 +182,8 @@ def main():
 
     while True:
         try:
-            api_response = get_api_answer(timestamp)
-            homeworks = check_response(api_response)
+            api_payload = get_api_answer(timestamp)
+            homeworks = check_response(api_payload)
             if homeworks:
                 for homework in homeworks:
                     message = parse_status(homework)
@@ -191,7 +191,7 @@ def main():
                     send_worker_photo(bot, homework)
             else:
                 logger.debug('No new homework statuses in API response')
-            timestamp = api_response.get('current_date', timestamp)
+            timestamp = api_payload.get('current_date', timestamp)
             last_error_message = None
 
         except TelegramSendError:
