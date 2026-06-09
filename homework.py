@@ -210,10 +210,12 @@ def main():
             homeworks = check_response(api_payload)
             if homeworks:
                 for homework in homeworks:
-                    homework_id = homework.get('id')
-                    if homework_id in processed_homeworks:
+                    homework_key = (
+                        homework.get('id'), homework.get('status')
+                    )
+                    if homework_key in processed_homeworks:
                         continue
-                    processed_homeworks.add(homework_id)
+                    processed_homeworks.add(homework_key)
                     message = parse_status(homework)
                     send_message(bot, message)
                     send_worker_photo(bot, homework)
