@@ -76,18 +76,21 @@ def check_tokens():
 
 
 def send_message(bot, message):
-    """Send message to Telegram chat."""
-    try:
-        bot.send_message(chat_id=TELEGRAM_CHAT_ID, text=message)
-    except (
-        telebot.apihelper.ApiException,
-        requests.RequestException
-    ) as error:
-        logger.exception(
-            'Failed to send message to Telegram'
-        )
-        raise TelegramSendError('Telegram API request failed') from error
-    logger.debug(f'Bot sent message: {message}')
+    """Send message to Telegram chat with retries."""
+    max_retries = 3
+    retry_delay = 10
+    for attempt in range(max_retries):
+        try:
+            bot.send_message(chat_id=TELEGRAM_CHAT_ID, text=message)
+        except (telebot.apihelper.ApiException, requests.RequestException) as error:
+            if attempt == max_retries - 1:
+                logger.exception('Failed to send message to Telegram after retries')
+                raise TelegramSendError('Telegram API request failed') from error
+            logger.warning('Retry %d/%d sending message', attempt + 1, max_retries)
+            time.sleep(retry_delay)
+        else:
+            logger.debug('Bot sent message: %s', message)
+            break
 
 
 def get_api_answer(timestamp):
@@ -191,6 +194,7 @@ def notify_error(bot, message, last_error_message):
         send_message(bot, message)
     except TelegramSendError:
         logger.exception('Failed to send error message to Telegram')
+        return last_error_message
     return message
 
 
