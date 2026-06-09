@@ -99,6 +99,11 @@ def get_api_answer(timestamp):
             params={'from_date': timestamp},
             timeout=REQUEST_TIMEOUT
         )
+    except requests.exceptions.SSLError as error:
+        logger.error('SSL connection error to %s: %s', ENDPOINT, error)
+        raise NotCorrectResponseError(
+            f'SSL connection error to API'
+        ) from error
     except requests.RequestException as error:
         raise NotCorrectResponseError(
             f'Request to API failed: {error}'
