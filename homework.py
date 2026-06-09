@@ -22,6 +22,7 @@ RETRY_PERIOD = 600
 RETRY_PERIOD_IN_SECONDS = RETRY_PERIOD
 ENDPOINT = 'https://practicum.yandex.ru/api/user_api/homework_statuses/'
 HEADERS = {'Authorization': f'OAuth {PRACTICUM_TOKEN}'}
+REQUEST_TIMEOUT = 30
 
 HOMEWORK_VERDICTS = {
     'approved': 'Работа проверена: ревьюеру всё понравилось. Ура!',
@@ -95,7 +96,8 @@ def get_api_answer(timestamp):
         response = requests.get(
             ENDPOINT,
             headers=HEADERS,
-            params={'from_date': timestamp}
+            params={'from_date': timestamp},
+            timeout=REQUEST_TIMEOUT
         )
     except requests.RequestException as error:
         raise NotCorrectResponseError(
